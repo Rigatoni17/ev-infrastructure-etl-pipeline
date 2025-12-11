@@ -1,0 +1,3 @@
+State model (2022). Train/test split 70/30.
+Linear RMSE=0.317, R2=0.657
+RF RMSE=0.326, R2=0.638

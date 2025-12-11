@@ -1,0 +1,4 @@
+NJ county model (2022). Train/test split 70/30.
+Linear RMSE=1.273, R2=-474.816
+RF RMSE=0.255, R2=-18.132
+Note: only 9 counties with chargers, extreme sparsity -> negative R2.
