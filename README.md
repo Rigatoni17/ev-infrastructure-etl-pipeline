@@ -1,30 +1,37 @@
-# EV Charging Needs Analysis (CS439 Project)
+# Automated EV Infrastructure ETL Pipeline
 
-I keep everything in Python and MySQL. Data lives under `data/` and notebooks under `notebooks/`.
+## Project Overview
+This project demonstrates an end to end data acquisition and ETL pipeline designed to analyze public electric vehicle infrastructure. The primary engineering challenge was extracting unstructured data via federal APIs, profiling the data for quality issues, and transforming it into a clean dimensional format loaded into MySQL for geospatial visualization.
 
-## Setup
-1) Install Python 3.12+ (It's what I used but other versions may work) and packages: pandas, seaborn, scikit-learn, geopandas, pymysql.
-2) Set API keys in env before downloads:
-   - `export NREL_API_KEY=...`
-   - `export CENSUS_API_KEY=...`
-3) Fetch data (optional if you keep the processed CSVs):
-   - `python3 src/download_data.py`
-   - `python3 src/clean_chargers.py`
-   - `python3 src/build_state_features.py`
+## ETL Architecture & Data Processing
 
-## Notebooks
-- `01_nj_county.ipynb` shows the NJ county attempt (sparse data, negative R²).
-- `02_state_model.ipynb` trains the state-level model (2022).
-- `03_sql_demo.ipynb` queries the MySQL table.
+### 1. Data Extraction (Python & APIs)
+* Engineered automated Python scripts (`src/download_data.py`) to extract raw charging station data and electric vehicle registration records securely using the NREL and US Census APIs.
+* Collected underlying demographic features to provide necessary context for infrastructure density.
 
-## MySQL
-- Load table from project root:
-  - `MYSQL_PWD='your_pw' mysql -uroot -h127.0.0.1 -P3306 --local-infile=1 < sql/mysql_setup.sql`
-- Query example:
-  - `MYSQL_PWD='your_pw' mysql -uroot -h127.0.0.1 -P3306 -D ev_project -e "SELECT State, chargers_per_100k, stations FROM state_features_2022 ORDER BY chargers_per_100k DESC LIMIT 10;"`
+### 2. Data Transformation & Profiling
+* Data Quality Control: Performed extensive data profiling (`src/clean_chargers.py`) to identify missing values and standardize inconsistent geographic naming conventions.
+* Feature Engineering: Engineered new geospatial variables (`src/build_state_features.py`) using Pandas and GeoPandas to normalize charging station availability against local population density.
 
-## Notes
-- Keys are not hardcoded; set env vars.
-- Paths are relative to repo root.
-- State model (2022): Linear RMSE ~0.317, R² ~0.657; RF RMSE ~0.326, R² ~0.638.
-- NJ model kept to show thinking process: Linear R² ~ -475 (too sparse to use).
+### 3. Load & Database Management (MySQL)
+* Engineered a local relational database structure to house the cleaned analytical tables.
+* Executed automated bulk load operations to move transformed data into MySQL for final query execution and dashboard visualization.
+
+## Technical Setup & Deployment
+
+1. Install required Python packages: pandas, seaborn, scikit learn, geopandas, pymysql.
+2. Set API keys in your environment variables before initiating the download scripts:
+    export NREL_API_KEY='your_key'
+    export CENSUS_API_KEY='your_key'
+3. Execute the ETL pipeline:
+    python3 src/download_data.py
+    python3 src/clean_chargers.py
+    python3 src/build_state_features.py
+4. Load the transformed data into MySQL:
+    MYSQL_PWD='your_pw' mysql -uroot -h127.0.0.1 -P3306 --local-infile=1 < sql/mysql_setup.sql
+
+## Repository Contents
+* /src/: The core Python ETL scripts handling data extraction, cleaning, and transformation.
+* /sql/: The database setup scripts and load commands.
+* /notebooks/: Exploratory data analysis, regression modeling, and SQL query demonstrations.
+* infrastructure_analysis_report.pdf: The comprehensive report detailing the data environment constraints, profiling methodology, and final geospatial insights.
